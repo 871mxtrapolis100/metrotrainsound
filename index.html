@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🚆 Oscar's Ultimate Train Player</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Blurred background */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("https://i.postimg.cc/Pr0TQTR5/Melbourne-Rocks.jpg") no-repeat center center fixed;
+        background-size: cover;
+        filter: blur(5px);
+        z-index: -1;
+    }
+
+    h1 {
+        font-size: 36px;
+        margin-top: 40px;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+
+    button {
+        padding: 15px 35px;
+        margin: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        transition: background 0.2s;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+    }
+
+    button:hover { background: rgba(0,0,0,0.8); }
+
+    input[type="range"] {
+        width: 300px;
+        margin: 10px 0;
+    }
+
+    #status {
+        margin-top: 20px;
+        font-size: 20px;
+        text-shadow: 1px 1px 6px rgba(0,0,0,0.8);
+    }
+</style>
+</head>
+<body>
+
+<h1>🚆 Oscar's Ultimate Train Sound Player</h1>
+
+<button onclick="playRandomSound()">🎲 Play Random Train</button>
+<button onclick="stopSound()">⏹ Stop</button>
+<button onclick="toggleLoop()">🔁 Loop: OFF</button>
+<br>
+<label>🔊 Volume</label><br>
+<input type="range" min="0" max="1" step="0.01" value="0.5" id="volumeSlider">
+
+<p id="status">Ready</p>
+
+<script>
+// ==================== ALL DRIVE LINKS ====================
+const sounds = [
+"https://drive.google.com/uc?export=download&id=10VWYMVEPzUdD71IDuWXqNiMpQlJqNx_2",
+"https://drive.google.com/uc?export=download&id=10_sh4CEYLs7kJe6UvgpooNsy8bAnDk4R",
+"https://drive.google.com/uc?export=download&id=114K4Xdi0XksuyprXIeT2E3sareJDQqGs",
+"https://drive.google.com/uc?export=download&id=11ErOE6cGp0yOPoz0-VrOX8qkDE2bAioO",
+"https://drive.google.com/uc?export=download&id=11tWCei2VmhkZ3MEVC42VayZ0qq57dScN",
+"https://drive.google.com/uc?export=download&id=12EUklkgMTlDVgKU3uBI-cYjEYJJLwCnK",
+"https://drive.google.com/uc?export=download&id=12hNoiCKzp7CBT5Gfv6JJOXfp3D6ApDgs",
+"https://drive.google.com/uc?export=download&id=17mxRfUhLm_YvFRBKkYBtxPfSM_la3GS2",
+"https://drive.google.com/uc?export=download&id=17nEjogMCsZdhqRGmVeg846hkJn3w_Fp4",
+"https://drive.google.com/uc?export=download&id=18phUu3BJ1AdGDJX_WZj5LDgZqyRYLSBD",
+"https://drive.google.com/uc?export=download&id=1ApGFc27oLXso7-U4tuv-z32tznl5heS7",
+"https://drive.google.com/uc?export=download&id=1BOMGxUEgjmL7Qw_Omo1S3MWD-JcKwAAk",
+"https://drive.google.com/uc?export=download&id=1Bi9ZRFvN-HBmPvG7oWMs2zgaa-4Yarnh",
+"https://drive.google.com/uc?export=download&id=1DZHZyqLHEzR0_zAIuYikWj2c_LinTGeE",
+"https://drive.google.com/uc?export=download&id=1Da10isoRXOPrLdj8LKgGlKtc-qThWtgW",
+"https://drive.google.com/uc?export=download&id=1DmipYHSGpukDz9VTDWsJ_F3_My7CF8tb",
+"https://drive.google.com/uc?export=download&id=1ERvpQvTjW75TfbMzvh6Mf7I4_VgtfQRN",
+"https://drive.google.com/uc?export=download&id=1FGBf2KBNcY5NfyI_XNHBOZiXRztQaWuj",
+"https://drive.google.com/uc?export=download&id=1G9Q_erCpnh07pQC1c4JvyJtpm_ww8xZV",
+"https://drive.google.com/uc?export=download&id=1HJqQbS0laHpE3TwTqTAKAzIUgToLl4to",
+"https://drive.google.com/uc?export=download&id=1Ht1aB0Rpyuqq9qphhXItggZA8xaxUAeM",
+"https://drive.google.com/uc?export=download&id=1I8SLw2VkpEt92g99dWPGmJNEuzaabn9R",
+"https://drive.google.com/uc?export=download&id=1Izjqs7Y0IyA-95VRNFGMoZ4UfxuBd81P",
+"https://drive.google.com/uc?export=download&id=1KGS3TIm14UgrFSUvjkCWC95CLerTKGFV",
+"https://drive.google.com/uc?export=download&id=1Kftc2_1pZCTU_tDC5RI1o8aH2ZwWzraR",
+"https://drive.google.com/uc?export=download&id=1M6nnmK4UtR9GBlA6xiEz-FL2kigtl95v",
+"https://drive.google.com/uc?export=download&id=1MqNY5OPBbWuKYoDBPuVkExxFPzbqQgoG",
+"https://drive.google.com/uc?export=download&id=1MurGBUWqWFwMTyOYlIJOamtdC2Q_PGzW",
+"https://drive.google.com/uc?export=download&id=1N20VfrywPE4DvdZ0j49vdEJejwXE_e3q",
+"https://drive.google.com/uc?export=download&id=1NFDQOMM6q_qSRIjuX3CRkkUF7zl2j_q9",
+"https://drive.google.com/uc?export=download&id=1NLfm1W5j8oWe9Hgob26sQUPu3-mcYq6q",
+"https://drive.google.com/uc?export=download&id=1Nz_Uuu2rLzcqvLJ3WNbYIcB4G598IGty",
+"https://drive.google.com/uc?export=download&id=1PLafHR2lEKGn7d7-daQ81qrT5XC8Kai2",
+"https://drive.google.com/uc?export=download&id=1QEk_kK7oAHfTthIAZZjAPk3tZgln_JvW",
+"https://drive.google.com/uc?export=download&id=1QZ-v43Vbhr2vb4F9cDjPIE3qTxOryB7J",
+"https://drive.google.com/uc?export=download&id=1QdB4xPYlORq0ugaXZvUzcfh6uVjRsiZ_",
+"https://drive.google.com/uc?export=download&id=1S90DjF5MbYtVMx_z-_4q6CMNZRUmQE_U",
+"https://drive.google.com/uc?export=download&id=1SPOxTPIPzYTkZk17I2hZUaWnSpt0aMVQ",
+"https://drive.google.com/uc?export=download&id=1Xms4ZAigQenF6uFFrO1i_GdtMDWmkB2_",
+"https://drive.google.com/uc?export=download&id=1_yJjnX3BgLJ8o73KjvnOt161AX5w1Qnp",
+"https://drive.google.com/uc?export=download&id=1aEdM-Xi5C5QVoRb2hqP4J91gsrGqGwoU",
+"https://drive.google.com/uc?export=download&id=1b0J4N94I9lbxDoqi4MkYNuSbwQrQSwSP",
+"https://drive.google.com/uc?export=download&id=1bNvxbJU2taKcQixrXlgcbH8gextD9-_u",
+"https://drive.google.com/uc?export=download&id=1cFzW0QNc8Y2XY6blM0XwcCTAnyJRtS68",
+"https://drive.google.com/uc?export=download&id=1dSTl2NEvaYztI0peKmtFGTmh1jWQHnuX",
+"https://drive.google.com/uc?export=download&id=1dhyqlax_XalasiMz9ko9QTfGK3voymmy",
+"https://drive.google.com/uc?export=download&id=1flODcgMm7A3rY_xdOFDTZlN9dVWmK8oc",
+"https://drive.google.com/uc?export=download&id=1itKAEbUQGQRsVCAslPv0bDROxfagFkrA",
+"https://drive.google.com/uc?export=download&id=1ivA1WgXkVk7k30IyQEl-tUhLezCMtH6J",
+"https://drive.google.com/uc?export=download&id=1j7EsFyIWFreIbSO9Y9Xqt5Rn_PWHkNlY",
+"https://drive.google.com/uc?export=download&id=1jQk9pxMB3Sl2wlZGqFg3kLIWh4xe4n2q",
+"https://drive.google.com/uc?export=download&id=1kZeblXVLn23MXPR7quNLiX6ULdJzDAVp",
+"https://drive.google.com/uc?export=download&id=1l0zU5juWwYhFXPjJKnESwHSqvo9DkIvo",
+"https://drive.google.com/uc?export=download&id=1m-Os3tuMEtar1Q1MVJ-SL1pG_Akebyb0",
+"https://drive.google.com/uc?export=download&id=1ma6B-2t7z_HTGdnTMmoYjHxd7XylOWoo",
+"https://drive.google.com/uc?export=download&id=1nMR0u6aw182HVox6WuRI1L4vS9OPyV2P",
+"https://drive.google.com/uc?export=download&id=1pnCwHKSqEy50vcfxq82k0O1Ah-dlZtIo",
+"https://drive.google.com/uc?export=download&id=1qvAxysARSuh-N1CAEilq70B2-KxoeClP",
+"https://drive.google.com/uc?export=download&id=1rnzUQUijiUamH7JIVVzSYIb9MOdmloqL",
+"https://drive.google.com/uc?export=download&id=1rzKP2HoVkOtQb4LYNTorKfRB4G1OeHBV",
+"https://drive.google.com/uc?export=download&id=1si_soWfLXkcNRX0YpLa97w3J9NRYOova",
+"https://drive.google.com/uc?export=download&id=1tTWHuhVPv2IRKulrgC1K69qMoPV2VoSU",
+"https://drive.google.com/uc?export=download&id=1t_vpnpDejJ3S5gr6w-9VFJ5mG5Fp1Dt0",
+"https://drive.google.com/uc?export=download&id=1uowv75-IZT37BNxXkdKH1PTJLX6xsKim",
+"https://drive.google.com/uc?export=download&id=1xfFWp0lswS0AC5QpFqI_FayAQS_QyuW4",
+"https://drive.google.com/uc?export=download&id=1xxy73YwIgBTDV5F-1eSTByjsXn5q0bbg",
+"https://drive.google.com/uc?export=download&id=1y2BykpeIN4dLTWx6fIkFq7wvFQNfIYf9",
+"https://drive.google.com/uc?export=download&id=1y6BxbuTM7EIcCHg7S6Hl_RO60oHo_4yA",
+"https://drive.google.com/uc?export=download&id=1ydp6uJWea81TVE9nT8C1vrT_ENk6nW8M",
+"https://drive.google.com/uc?export=download&id=1zTlVQOvgf8RavY_Z1ApklyMTA-dAQhBK"
+];
+
+// ==================== VARIABLES ====================
+let currentAudio = null;
+let loopMode = false;
+let chaosMode = true;
+
+// ==================== FUNCTIONS ====================
+function playRandomSound() {
+    const randomIndex = Math.floor(Math.random() * sounds.length);
+
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+
+    currentAudio = new Audio(sounds[randomIndex]);
+    currentAudio.volume = document.getElementById("volumeSlider").value;
+    currentAudio.loop = loopMode;
+
+    document.getElementById("status").innerText = "🎵 Playing sound #" + (randomIndex + 1) + " of " + sounds.length;
+
+    currentAudio.play().catch(() => {
+        alert("Make sure all files are set to 'Anyone with the link can view'.");
+    });
+
+    if (chaosMode) {
+        currentAudio.onended = () => {
+            setTimeout(playRandomSound, 500);
+        }
+    }
+}
+
+function stopSound() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        document.getElementById("status").innerText = "⏹ Stopped";
+    }
+}
+
+function toggleLoop() {
+    loopMode = !loopMode;
+    if (currentAudio) currentAudio.loop = loopMode;
+    document.querySelector('button[onclick="toggleLoop()"]').innerText = loopMode ? "🔁 Loop: ON" : "🔁 Loop: OFF";
+}
+
+document.getElementById("volumeSlider").addEventListener("input", () => {
+    if (currentAudio) currentAudio.volume = document.getElementById("volumeSlider").value;
+});
+</script>
+</body>
+</html>
