@@ -2,82 +2,259 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>🚆 Metro Train Soundboard</title>
+<title>🚆 Metro Ultimate Soundboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body {
-    margin:0;
-    font-family:Arial;
-    text-align:center;
-    background:black;
-    color:white;
+:root{
+--bg-overlay: rgba(0,0,0,0.65);
+--btn: #00bcd4;
+--btn-hover: #0097a7;
+--text: white;
 }
-button {
-    padding:15px 25px;
-    margin:10px;
-    border-radius:10px;
-    border:none;
-    background:#00bcd4;
-    color:white;
-    font-size:16px;
+
+body{
+margin:0;
+font-family:Arial;
+text-align:center;
+color:var(--text);
+background:url("https://i.postimg.cc/Pr0TQTR5/Melbourne-Rocks.jpg") center/cover no-repeat fixed;
 }
-.train {
-    position:absolute;
-    bottom:10px;
-    left:-200px;
-    font-size:40px;
-    animation: move 10s linear infinite;
+
+.overlay{
+background:var(--bg-overlay);
+backdrop-filter:blur(6px);
+min-height:100vh;
+padding:20px;
 }
-@keyframes move {
-    from { left:-200px; }
-    to { left:110%; }
+
+h1{font-size:38px;}
+
+button{
+padding:12px 18px;
+margin:6px;
+border:none;
+border-radius:12px;
+background:var(--btn);
+color:white;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:var(--btn-hover);
+transform:scale(1.05);
+}
+
+input[type="range"]{ width:200px; }
+
+/* Train animation */
+.train{
+position:fixed;
+bottom:10px;
+left:-300px;
+font-size:40px;
+animation:moveTrain 14s linear infinite;
+}
+
+@keyframes moveTrain{
+0%{left:-300px;}
+100%{left:110%;}
+}
+
+/* Copyright text */
+.copyright{
+position:fixed;
+bottom:10px;
+right:15px;
+font-size:14px;
+opacity:0.8;
 }
 </style>
 </head>
 <body>
 
-<h1>🚆 Melbourne Metro Sounds</h1>
+<div class="overlay">
 
-<button onclick="playRandom()">🎲 Play Random</button>
+<h1>🚆 Metro Ultimate Soundboard</h1>
+
+<button onclick="playRandom()">🎲 Random</button>
+<button onclick="playNext()">⏭ Next</button>
+<button onclick="playLast()">⏮ Play Last</button>
 <button onclick="stopSound()">⏹ Stop</button>
+<button onclick="toggleLoop()" id="loopBtn">🔁 Loop: OFF</button>
+<button onclick="toggleAuto()" id="autoBtn">⚡ Auto: OFF</button>
+<button onclick="playHorn()">📯 Horn</button>
+<button onclick="toggleTheme()">🌗 Theme</button>
 
-<div id="status">Ready</div>
-<div class="train">🚄</div>
+<br><br>
+
+🔊 Volume<br>
+<input type="range" min="0" max="1" step="0.01" value="0.6" id="volume">
+
+<p id="status">Ready</p>
+<p id="counter"></p>
+
+</div>
+
+<!-- Train now facing RIGHT -->
+<div class="train">🚆</div>
+
+<!-- Copyright -->
+<div class="copyright">
+© Copyright Oscar Allen (871M) 2026
+</div>
 
 <script>
-let files = [];
-let currentAudio = null;
 
-// THIS PART AUTO LOADS ALL WAV FILES
-fetch("https://api.github.com/repos/871mxtrapolis100/metrotrainsound/contents/sounds")
-.then(res => res.json())
-.then(data => {
-    files = data
-        .filter(file => file.name.endsWith(".wav") || file.name.endsWith(".mp3"))
-        .map(file => file.download_url);
+/* YOUR FULL SOUND LIST STAYS EXACTLY THE SAME */
+let allSounds = [
+"sounds/All Change This train not taking passengers Xtrap.m4a",
+"sounds/All change train not taking passengers.m4a",
+"sounds/East Pakenham Limited express service Comeng.m4a",
+"sounds/Flinders Street Services Comeng.m4a",
+"sounds/New Myki Reader Sound Not Working.m4a",
+"sounds/New Myki Sound.m4a",
+"sounds/Now Arriving At  HCMT Train Richmond .m4a",
+"sounds/Now Arriving At Burnley.m4a",
+"sounds/Now arriving at Caulfield Original Siemens.m4a",
+"sounds/Now arriving at Clifton Hill (change for Hurstbridge Services).m4a",
+"sounds/Now arriving at Clifton hill.m4a",
+"sounds/Now arriving at Comeng Train.m4a",
+"sounds/Now arriving at Footscray.m4a",
+"sounds/Now arriving at HCMT Dandenong.m4a",
+"sounds/Now arriving at HCMT South Yarra.m4a",
+"sounds/Now arriving at HCMT Train.m4a",
+"sounds/Now Arriving At North Melbourne Semins 2.m4a",
+"sounds/Now Arriving At North Melbourne Semins.m4a",
+"sounds/Now Arriving At Parliament HCMT.m4a",
+"sounds/Now arriving At Richmond Comeng.m4a",
+"sounds/Now arriving at Richmond original Siemens.m4a",
+"sounds/Now arriving at Siemens Train.m4a",
+"sounds/Now arriving at South Yarra Comeng.m4a",
+"sounds/Now arriving at South Yarra original Siemens.m4a",
+"sounds/Now arriving At X'Trapoles Richmond.m4a",
+"sounds/Now arriving at X'Trapoles.m4a",
+"sounds/Now terminating at Craigieburn.m4a",
+"sounds/Now Terminating at flinders street Comeng.m4a",
+"sounds/Now terminating at HCMT Train.m4a",
+"sounds/Now terminating at Sandringham.m4a",
+"sounds/Now terminating At Upfield Semins.m4a",
+"sounds/Service to Cheltenham Comeng.m4a",
+"sounds/Service to Cheltenham.m4a",
+"sounds/Service to Craigiburn Semins.m4a",
+"sounds/Service to Craigieburn via The city Loop Semins.m4a",
+"sounds/Service to Flinders street Siemins.m4a",
+"sounds/Service to Flinders Street via city Loop.m4a",
+"sounds/Service to Frankston.m4a",
+"sounds/Service To Laverton Semins Train.m4a",
+"sounds/Service to Moorabbin Siemens.m4a",
+"sounds/Service To Mordialloc semins.m4a",
+"sounds/Service To Sandringham Comeng.m4a",
+"sounds/Service to Sandringham Siemens.m4a",
+"sounds/Service To Upfield Semins.m4a",
+"sounds/Service To Watergardens Via The city Loop.m4a",
+"sounds/Service to Werribee except Seaford.m4a",
+"sounds/Service To Williamstown Original Semins.m4a",
+"sounds/Service To Williamstown Semins.m4a",
+"sounds/Terminating At Cheltenham.m4a",
+"sounds/Terminating At Cranbourne.m4a",
+"sounds/Terminating At Frankston Comeng.m4a",
+"sounds/Terminating at Glen Waverley .m4a",
+"sounds/Terminating At Hurstbridge.m4a",
+"sounds/Terminating at Mernda.m4a",
+"sounds/Terminating at Moorabbin Siemens.m4a",
+"sounds/Terminating at Williamstown.m4a",
+"sounds/Welcome to Metro  Service direct To Flinders Street.m4a",
+"sounds/Welcome to Metro  Service to Glen Waverley  via city loop.m4a",
+"sounds/Welcome To Metro Service To Cheltenham.m4a",
+"sounds/Welcome to Metro Service to Craigiburn.m4a",
+"sounds/Welcome To Metro Service To Flinders Street Via The City Loop.m4a",
+"sounds/Welcome to Metro Service To Flinders Street.m4a",
+"sounds/Welcome To Metro service to Frankston.m4a",
+"sounds/Welcome to Metro Service To Hurstbridge Via the city loop.m4a",
+"sounds/Welcome to Metro Service To Laverton.m4a",
+"sounds/Welcome to Metro Service To Mernda Via City loop.m4a",
+"sounds/Welcome to metro service to North Melbourne.m4a",
+"sounds/Welcome to Metro Service To Upfield.m4a",
+"sounds/Werribee Services semins.m4a",
+"sounds/Williamstown limited express service.m4a"
+];
 
-    document.getElementById("status").innerText =
-        "Loaded " + files.length + " sounds";
-});
+let horn="sounds/Horn.mp3";
+let currentAudio;
+let lastPlayed=null;
+let currentIndex=-1;
+let loopMode=false;
+let autoMode=false;
 
-function playRandom() {
-    if (!files.length) return;
+document.getElementById("counter").innerText =
+"Loaded "+allSounds.length+" sounds + horn";
 
-    const random = Math.floor(Math.random()*files.length);
+function playRandom(){
+currentIndex=Math.floor(Math.random()*allSounds.length);
+playSound(allSounds[currentIndex]);
+}
 
-    if (currentAudio) currentAudio.pause();
+function playNext(){
+currentIndex++;
+if(currentIndex >= allSounds.length) currentIndex=0;
+playSound(allSounds[currentIndex]);
+}
 
-    currentAudio = new Audio(files[random]);
-    currentAudio.play();
+function playLast(){
+if(lastPlayed) playSound(lastPlayed);
+}
 
-    document.getElementById("status").innerText =
-        "Playing: " + files[random].split("/").pop();
+function playHorn(){ playSound(horn); }
+
+function playSound(file){
+if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
+currentAudio=new Audio(file);
+currentAudio.volume=document.getElementById("volume").value;
+currentAudio.loop=loopMode;
+currentAudio.play();
+
+document.getElementById("status").innerText="Playing: "+file.split("/").pop();
+lastPlayed=file;
+
+currentAudio.onended=function(){
+if(autoMode && !loopMode) playNext();
+}
 }
 
 function stopSound(){
-    if(currentAudio) currentAudio.pause();
+if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
+document.getElementById("status").innerText="Stopped";
 }
-</script>
 
+function toggleLoop(){
+loopMode=!loopMode;
+document.getElementById("loopBtn").innerText =
+"🔁 Loop: " + (loopMode ? "ON" : "OFF");
+}
+
+function toggleAuto(){
+autoMode=!autoMode;
+document.getElementById("autoBtn").innerText =
+"⚡ Auto: " + (autoMode ? "ON" : "OFF");
+}
+
+document.getElementById("volume").addEventListener("input",function(){
+if(currentAudio) currentAudio.volume=this.value;
+});
+
+function toggleTheme(){
+let root=document.documentElement;
+if(root.style.getPropertyValue('--bg-overlay')==="rgba(0,0,0,0.65)"){
+root.style.setProperty('--bg-overlay',"rgba(255,255,255,0.7)");
+root.style.setProperty('--text',"black");
+}else{
+root.style.setProperty('--bg-overlay',"rgba(0,0,0,0.65)");
+root.style.setProperty('--text',"white");
+}
+}
+
+</script>
 </body>
 </html>
