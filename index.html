@@ -28,8 +28,6 @@ min-height:100vh;
 padding:20px;
 }
 
-h1{font-size:38px;}
-
 button{
 padding:12px 18px;
 margin:6px;
@@ -46,9 +44,10 @@ background:var(--btn-hover);
 transform:scale(1.05);
 }
 
-input[type="range"]{ width:200px; }
+input[type="range"]{
+width:200px;
+}
 
-/* Train animation */
 .train{
 position:fixed;
 bottom:10px;
@@ -62,7 +61,6 @@ animation:moveTrain 14s linear infinite;
 100%{left:110%;}
 }
 
-/* Copyright text */
 .copyright{
 position:fixed;
 bottom:10px;
@@ -97,18 +95,13 @@ opacity:0.8;
 
 </div>
 
-<!-- Train now facing RIGHT -->
 <div class="train">🚆</div>
-
-<!-- Copyright -->
-<div class="copyright">
-© Copyright Oscar Allen (871M) 2026
-</div>
+<div class="copyright">© Copyright Oscar Allen (871M) 2026</div>
 
 <script>
 
-/* YOUR FULL SOUND LIST STAYS EXACTLY THE SAME */
 let allSounds = [
+
 "sounds/All Change This train not taking passengers Xtrap.m4a",
 "sounds/All change train not taking passengers.m4a",
 "sounds/East Pakenham Limited express service Comeng.m4a",
@@ -179,26 +172,30 @@ let allSounds = [
 "sounds/Welcome to Metro Service To Upfield.m4a",
 "sounds/Werribee Services semins.m4a",
 "sounds/Williamstown limited express service.m4a"
+
 ];
 
-let horn="sounds/Horn.mp3";
+let horn = "sounds/horn.mp3";
+
 let currentAudio;
-let lastPlayed=null;
-let currentIndex=-1;
-let loopMode=false;
-let autoMode=false;
+let lastPlayed = null;
+let currentIndex = -1;
+let loopMode = false;
+let autoMode = false;
 
 document.getElementById("counter").innerText =
-"Loaded "+allSounds.length+" sounds + horn";
+"Loaded " + allSounds.length + " sounds + horn";
+
+/* (rest of script continues exactly as before for play functions…) */
 
 function playRandom(){
-currentIndex=Math.floor(Math.random()*allSounds.length);
+currentIndex = Math.floor(Math.random()*allSounds.length);
 playSound(allSounds[currentIndex]);
 }
 
 function playNext(){
 currentIndex++;
-if(currentIndex >= allSounds.length) currentIndex=0;
+if(currentIndex >= allSounds.length) currentIndex = 0;
 playSound(allSounds[currentIndex]);
 }
 
@@ -206,46 +203,56 @@ function playLast(){
 if(lastPlayed) playSound(lastPlayed);
 }
 
-function playHorn(){ playSound(horn); }
+function playHorn(){
+playSound(horn);
+}
 
 function playSound(file){
-if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
-currentAudio=new Audio(file);
-currentAudio.volume=document.getElementById("volume").value;
-currentAudio.loop=loopMode;
+if(currentAudio){
+currentAudio.pause();
+currentAudio.currentTime = 0;
+}
+currentAudio = new Audio(file);
+currentAudio.volume = document.getElementById("volume").value;
+currentAudio.loop = loopMode;
 currentAudio.play();
 
-document.getElementById("status").innerText="Playing: "+file.split("/").pop();
-lastPlayed=file;
+document.getElementById("status").innerText =
+"Playing: " + file.split("/").pop();
 
-currentAudio.onended=function(){
+lastPlayed = file;
+
+currentAudio.onended = function(){
 if(autoMode && !loopMode) playNext();
 }
 }
 
 function stopSound(){
-if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;}
-document.getElementById("status").innerText="Stopped";
+if(currentAudio){
+currentAudio.pause();
+currentAudio.currentTime = 0;
+}
+document.getElementById("status").innerText = "Stopped";
 }
 
 function toggleLoop(){
-loopMode=!loopMode;
+loopMode = !loopMode;
 document.getElementById("loopBtn").innerText =
 "🔁 Loop: " + (loopMode ? "ON" : "OFF");
 }
 
 function toggleAuto(){
-autoMode=!autoMode;
+autoMode = !autoMode;
 document.getElementById("autoBtn").innerText =
 "⚡ Auto: " + (autoMode ? "ON" : "OFF");
 }
 
-document.getElementById("volume").addEventListener("input",function(){
-if(currentAudio) currentAudio.volume=this.value;
+document.getElementById("volume").addEventListener("input", function(){
+if(currentAudio) currentAudio.volume = this.value;
 });
 
 function toggleTheme(){
-let root=document.documentElement;
+let root = document.documentElement;
 if(root.style.getPropertyValue('--bg-overlay')==="rgba(0,0,0,0.65)"){
 root.style.setProperty('--bg-overlay',"rgba(255,255,255,0.7)");
 root.style.setProperty('--text',"black");
